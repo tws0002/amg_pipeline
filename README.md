@@ -1,2 +1,3 @@
 # AMG Pipeline
-Animagrad Pipeline Core
+
+Ядро пайплайна для студии анимации Animagrad.
