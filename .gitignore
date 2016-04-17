@@ -1,0 +1,42 @@
+### IGNORE ###
+# ignore temp folder
+_tmp
+# ignore python interpreter
+/python/*
+# ignore CGRU folder
+/cgru/*
+# ignore plugins
+/plugins/*
+# ignore pyc files
+*.pyc
+# ignore .idea
+.idea
+# ignore custom
+custom_*
+env_*.cmd
+# todos
+todo
+# other
+.mayaSwatches
+# ignore included scripts
+/scripts/maya/python/*
+!/scripts/maya/python/pipeline_startup.py
+!/scripts/maya/python/example_menu.py
+/scripts/nuke/python
+!/scripts/nuke/python/menu_example.py
+/scripts/amg/utils/*
+!/scripts/amg/icons.py
+!/scripts/amg/__init__.py
+
+
+### INCLUDE ###
+# include CGRU version
+!/cgru/version.txt
+# include python info
+!/python/python.txt
+# include AMG CGRU plugins
+!/cgru/setup_amg.cmd
+!/cgru/afanasy/python/services/amg.py
+!/cgru/afanasy/python/parsers/amg.py
+
+

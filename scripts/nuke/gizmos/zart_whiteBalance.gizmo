@@ -1,0 +1,171 @@
+#! C:/Program Files/Nuke6.3v4/Nuke6.3.exe -nx
+version 6.3 v4
+Gizmo {
+ addUserKnob {20 User l "White Balance"}
+ addUserKnob {41 whitepoint l "White Point" T NoOp1.whitepoint}
+ addUserKnob {41 multiply l "White Point Mult" T NoOp1.multiply}
+ addUserKnob {26 line l "Find Neutral Areas"}
+ addUserKnob {41 threshold_1 l "Show Neutral" T NoOp1.threshold_1}
+ addUserKnob {41 threshold T NoOp1.threshold}
+ addUserKnob {41 thresh_color l "Inspect Color" T NoOp1.thresh_color}
+ addUserKnob {26 ""}
+ addUserKnob {41 mix T NoOp1.mix}
+}
+ Input {
+  inputs 0
+  name img
+  xpos -298
+  ypos -330
+ }
+ Dot {
+  name Dot3
+  xpos -264
+  ypos -290
+ }
+set Nbb0bda0 [stack 0]
+ Constant {
+  inputs 0
+  channels rgb
+  color 0.2176376408
+  name Constant1
+  xpos -45
+  ypos -446
+ }
+ Merge2 {
+  inputs 2
+  operation difference
+  bbox A
+  metainput A
+  name Merge1
+  xpos -45
+  ypos -293
+ }
+ Saturation {
+  saturation 0
+  name Saturation1
+  xpos -45
+  ypos -269
+ }
+ Expression {
+  temp_name0 th
+  temp_expr0 NoOp1.threshold
+  expr0 r<th?0:1
+  expr1 g<th?0:1
+  expr2 b<th?0:1
+  expr3 r<th?0:1
+  name Expression1
+  xpos -45
+  ypos -245
+ }
+ Invert {
+  channels rgba
+  name Invert1
+  xpos -45
+  ypos -221
+ }
+ Grade {
+  white {{parent.NoOp1.thresh_color.r i} {parent.NoOp1.thresh_color.g i} {parent.NoOp1.thresh_color.b i} 1}
+  name Grade2
+  xpos -45
+  ypos -197
+ }
+push $Nbb0bda0
+ Dot {
+  name Dot1
+  xpos -264
+  ypos -151
+ }
+set Na5bb8f0 [stack 0]
+ Grade {
+  gamma {{1/(parent.NoOp1.whitepoint.r*NoOp1.multiply) i} {1/(parent.NoOp1.whitepoint.g*NoOp1.multiply) i} {1/(parent.NoOp1.whitepoint.b*NoOp1.multiply) i} 1}
+  name Grade1
+  xpos -160
+  ypos -154
+ }
+ Dot {
+  name Dot2
+  xpos -126
+  ypos -75
+ }
+ Switch {
+  inputs 2
+  which {{NoOp1.threshold_1 i}}
+  name Switch1
+  xpos -45
+  ypos -78
+ }
+push $Na5bb8f0
+ Dot {
+  name Dot5
+  xpos -262
+  ypos 14
+ }
+set N2841f580 [stack 0]
+ Merge2 {
+  inputs 2
+  bbox B
+  name Merge3
+  xpos -45
+  ypos 11
+ }
+ Shuffle {
+  alpha white
+  name Shuffle1
+  xpos -45
+  ypos 168
+ }
+push $N2841f580
+ Shuffle {
+  alpha white
+  name Shuffle2
+  xpos -296
+  ypos 149
+ }
+ Dot {
+  name Dot4
+  xpos -264
+  ypos 217
+ }
+ Merge2 {
+  inputs 2
+  bbox B
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  mix {{parent.NoOp1.mix i}}
+  name Merge2
+  xpos -45
+  ypos 214
+ }
+set Na5bcc10 [stack 0]
+ Output {
+  name Output1
+  xpos -45
+  ypos 407
+ }
+push $Na5bcc10
+ Viewer {
+  input_process false
+  name Viewer1
+  xpos 215
+  ypos 264
+ }
+ NoOp {
+  inputs 0
+  name NoOp1
+  xpos 261
+  ypos -200
+  addUserKnob {20 User}
+  addUserKnob {18 whitepoint l "White Point" t "Pick a color in black areas"}
+  whitepoint {1 1 1}
+  addUserKnob {7 multiply l "White Point Mult" R 0 10}
+  multiply 1
+  addUserKnob {26 line l "Find Neutral Areas"}
+  addUserKnob {6 threshold_1 l "Show Neutral" t "Set threshold to see small black areas, which represents clear gray color" +STARTLINE}
+  threshold_1 true
+  addUserKnob {7 threshold}
+  threshold 0.05
+  addUserKnob {18 thresh_color l "Inspect Color"}
+  addUserKnob {26 ""}
+  addUserKnob {7 mix}
+  mix 1
+ }
+end_group

@@ -1,0 +1,22 @@
+{
+"":"Create file amg_config.json to overwrite this config",
+
+"":"PATHS",
+    "tmp_dir": "c:/af_temp",
+    "shotgun_exe":"",
+    "rv_exe":"",
+
+    "projects_path":"",
+    "ftp_path":"",
+
+"":"NAMES",
+    "menu_title": "AMG_Tools",
+
+"":"STARTUP",
+    "load_custom_py": true,
+
+"":"Network",
+    "amg_tray_port": 12345,
+    "api_url":"127.0.0.1/api",
+    "api_port":null
+}
