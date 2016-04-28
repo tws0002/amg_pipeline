@@ -1,0 +1,77 @@
+{"farm":{
+	"":"Example for use in AMG Pipeline (amg service added)",
+
+	"limits":[
+		{"service":"service_a", "maxhosts":10, "maxcount":-1},
+		{"service":"service_b", "maxcount":20}
+	],
+	"patterns":[
+	{
+		"name":"Some Host",
+		"mask":".*",
+		"description":"Default machine",
+		"capacity":1100,
+		"maxtasks":10,
+		"power":1000,
+		"nimby_idle_cpu": 10,
+		"nimby_busy_cpu": 50,
+		"nimby_idle_mem": 50,
+		"nimby_busy_mem": 90,
+		"nimby_idle_swp": 30,
+		"nimby_busy_swp": 80,
+		"nimby_idle_hddgb": 1,
+		"nimby_busy_hddgb": 1,
+		"nimby_idle_hddio": 50,
+		"nimby_busy_hddio": 95,
+		"-nimby_idle_netmbs": 10,
+		"-nimby_busy_netmbs": 100,
+		"nimby_idlefree_time": 1800,
+		"nimby_busyfree_time": 30,
+
+		"services":[
+			{"name":"arch"},
+			{"name":"checksum"},
+			{"name":"events"},
+			{"name":"ftp"},
+			{"name":"generic"},
+			{"name":"postcmd"},
+			{"name":"system"},
+			{"name":"wakeonlan"},
+			{"name":"walk","count":1},
+
+			{"name":"afterfx"},
+			{"name":"arnold"},
+			{"name":"hbatch"},
+			{"name":"hbatch_mantra"},
+			{"name":"mantra"},
+			{"name":"max"},
+			{"name":"maya"},
+			{"name":"maya_arnold"},
+			{"name":"mayatoarnold"},
+			{"name":"movgen"},
+			{"name":"nuke"},
+			{"name":"vray"},
+			{"name":"amg"}
+		],
+
+		"-os":"linux mac windows",
+	},{
+
+		"name":"Server",
+		"mask":"server.*|srv.*",
+		"description":"Captain.",
+		"capacity":1100,
+		"maxtasks":2,
+		"power":1000,
+		"remservices":[],
+		"services":[
+			{"name":"generic","count":1},
+			{"name":"system"},
+			{"name":"walk","count":1},
+			{"name":"movgen"},
+			{"name":"wakeonlan"},
+			{"name":"postcmd"}
+		]
+
+	}]
+}}

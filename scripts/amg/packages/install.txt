@@ -1,0 +1,5 @@
+shotgun_api3
+download:
+
+yaml
+download: pip install yaml

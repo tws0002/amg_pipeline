@@ -4,7 +4,8 @@ _tmp
 # ignore python interpreter
 /python/*
 # ignore CGRU folder
-/cgru/*
+/cgru_win/*
+/cgru_lnx/*
 # ignore plugins
 /plugins/*
 # ignore pyc files
@@ -26,18 +27,23 @@ todo
 /scripts/nuke/python
 !/scripts/nuke/python/menu_example.py
 /scripts/amg/utils/*
+!/scripts/amg/utils/__init__.py
 !/scripts/amg/icons.py
 !/scripts/amg/__init__.py
-
+/scripts/amg/packages/*
+!/scripts/amg/packages/install.txt
+!/scripts/amg/packages/__init__.py
 
 ### INCLUDE ###
 # include CGRU version
-!/cgru/version.txt
+!/cgru_win/version.txt
 # include python info
 !/python/python.txt
 # include AMG CGRU plugins
-!/cgru/setup_amg.cmd
-!/cgru/afanasy/python/services/amg.py
-!/cgru/afanasy/python/parsers/amg.py
+!/cgru_win/setup_amg.cmd
+!/cgru_win/afanasy/python/services/amg.py
+!/cgru_win/afanasy/python/parsers/amg.py
+!/cgru_win/afanasy/amg_farm_example.json
+
 
 

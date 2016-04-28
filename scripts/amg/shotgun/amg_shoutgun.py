@@ -1,10 +1,15 @@
-from shotgun_api3.shotgun import Shotgun
+from amg.packages.shotgun_api3.shotgun import Shotgun
+from amg.packages import yaml
 import sgtk
-import re
+import re, os
+import amg_config
 
 AMG_SERVER_PATH = 'https://animagrad.shotgunstudio.com'
 AMG_SCRIPT_USER = 'Toolkit'
 AMG_SCRIPT_KEY  = '2062d7c5d64ad72552fb0e983bd25203a823580620410a56367ac491d325fc6f'
+
+global cache
+cache = {}
 
 
 class SG(object):
@@ -120,15 +125,25 @@ class SG(object):
         note = sg.create("Note",data)
         return note
 
+    # @staticmethod
+    # def pipeline_root(project):
+    #     import amg_config
+    #
+    #     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(sgtk.__file__)))))
+
+
 class SG_Project(SG):
     type='Project'
     def __init__(self, id, data=None):
         super(SG_Project, self).__init__(id, data=data)
         # shortcuts
         self.name = self.data['name']
+        self.code = data['tank_name']
         # variables
         self._sequences = None
         self._shots = None
+        self._tank_path = None
+
 
     def shots(self):
         # filters = [['project','is',{'type':'Project','id':self.id}]]
@@ -161,12 +176,124 @@ class SG_Project(SG):
                     s._project = self
                     return s
 
+    def path(self):
+        path = os.path.join(amg_config.conf['projects_path'], self.data['tank_name']).replace('\\','/')
+        if os.path.exists(path):
+            return path
+
+    def tank_path(self):
+        from tank import pipelineconfig_factory
+        configs = pipelineconfig_factory._get_pipeline_configs()
+        if self._tank_path:
+            return self._tank_path
+        for c in configs['pipeline_configurations']:
+            if c['project.Project.tank_name'] == self.code:
+                for k_path in ('windows_path','linux_path','mac_path'):
+                    if os.path.exists(c[k_path]):
+                        self._tank_path = c[k_path].replace('\\','/')
+                        return self._tank_path
+
     @classmethod
     def named(cls, name):
         projects = SG.get_all_projects()
         for prj in projects:
-            if prj.name == name:
+            if prj.name == name or prj.data['tank_name'] == name:
                 return prj
+
+    def software_paths(self):
+        tank_path = self.tank_path()
+        if not tank_path:
+            print('Tank path not found')
+            return
+        paths = '/'.join([tank_path,'config/env/includes/paths.yml'])
+        if os.path.exists(paths):
+            try:
+                paths = yaml.load(open(paths))
+                return paths
+            except:
+                print 'Error parse'
+                return {}
+        else:
+            print 'paths.yml not found %s' % paths
+            return {}
+
+    def app_versions(self, app):
+        paths = '/'.join([self.tank_path(),'config/env/includes/app_launchers.yml'])
+        if os.path.exists(paths):
+            try:
+                data = yaml.load(open(paths))
+            except:
+                return
+            if 'launch_'+app in data:
+                return data.get('launch_'+app).get('versions')
+        else:
+            return
+
+    def get_app_bin(self, app, version=None, system=None):
+        """
+        maya or mayapy
+        houdini or python
+        nuke or nython
+        mary or mython
+        motionbuilder
+        3dsmax
+        photoshop
+        hiero
+        softimage
+        rv
+        """
+        global cache
+        if cache.get('project_aps'):
+            if self.code in cache.get('project_aps'):
+                if app in cache.get('project_aps').get(self.code):
+                    return cache.get('project_aps').get(self.code).get(app)
+        system = system or os.name
+        result_app = pipeline_app = app
+        binary_names = dict(
+            hython=('houdini', 'hython'),
+            mayapy=('maya','mayapy'),
+            nython=('nuke','python'),
+        )
+        if pipeline_app in binary_names:
+            result_app = binary_names[pipeline_app][1]
+            pipeline_app = binary_names[pipeline_app][0]
+
+        suff = {'nt':['windows', 'win'],'posix':['linux'],'os2': ['mac']}.get(system)
+        if suff:
+            path = [x for x in [self.software_paths().get('_'.join([pipeline_app, suf])) for suf in suff] if x]
+            if not path:
+                print 'Not found'
+                return
+            path = path[0]
+            if not pipeline_app == result_app:
+                dir = os.path.dirname(path)
+                name, ext = os.path.splitext(os.path.basename(path))
+                path = '/'.join([dir,result_app+ext])
+
+            if '{version}' in path:
+                versions = self.app_versions(pipeline_app)
+                if not versions:
+                    raise Exception('Version list not found in config')
+                if version:
+                    if not version in versions:
+                        raise Exception('Requested version not found: %s (%s)' % (version, versions))
+                    path = path.replace('{version}', str(version))
+                else:
+                    version = sorted(versions)[-1]
+                    path = path.replace('{version}', str(version))
+            path = path.replace('\\','/')
+            # if not os.path.exists(path):
+            #     print '>>> WARNING: File not exists on this machine'
+            if cache.get('project_aps'):
+                if cache['project_aps'].get(self.code):
+                    cache['project_aps'][self.code][app] = path
+                else:
+                    cache['project_aps'][self.code] = {app: path}
+            else:
+                cache['project_aps'] = {self.code:{app: path}}
+            return path
+
+
 
 class SG_Sequence(SG):
     type='Sequence'
