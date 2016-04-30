@@ -27,6 +27,7 @@ _tmp
 # ignore custom
 custom_*
 amg_config.json
+amg_user_config.json
 env_*.cmd
 # todos
 todo

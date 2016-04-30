@@ -10,7 +10,7 @@ if amg_root:
     if not amg_root in sys.path:
         sys.path.append(amg_root)
     import amg_config
-    PORT = amg_config.conf['amg_tray_port']
+    PORT = amg_config.get()['amg_tray_port']
 
 SIZEOF_UINT32 = 4
 

@@ -2,7 +2,7 @@ from amg.packages.shotgun_api3.shotgun import Shotgun
 from amg.packages import yaml
 import sgtk
 import re, os
-import amg_config
+from amg.api import amg_config
 
 AMG_SERVER_PATH = 'https://animagrad.shotgunstudio.com'
 AMG_SCRIPT_USER = 'Toolkit'
@@ -177,7 +177,7 @@ class SG_Project(SG):
                     return s
 
     def path(self):
-        path = os.path.join(amg_config.conf['projects_path'], self.data['tank_name']).replace('\\','/')
+        path = os.path.join(amg_config.get()['projects_path'], self.data['tank_name']).replace('\\','/')
         if os.path.exists(path):
             return path
 

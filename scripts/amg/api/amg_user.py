@@ -1,6 +1,7 @@
 import os, json
+user_settings_file_name = 'amg_user_config.json'
 import amg_path
-user_settings_file_name = 'settings.json'
+
 
 
 class User(object):
