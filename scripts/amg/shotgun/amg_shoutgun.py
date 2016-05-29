@@ -1,5 +1,8 @@
 from amg.packages.shotgun_api3.shotgun import Shotgun
-from amg.packages import yaml
+try:
+    from amg.packages import yaml
+except:
+    import yaml
 try:
     import sgtk
     from tank.util import shotgun

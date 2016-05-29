@@ -1,11 +1,10 @@
-import amg_config
-import time, hashlib, requests, types, urlparse
+import time, hashlib, requests
 import amg_config
 reload(amg_config)
 
+
 class AMGServer(object):
     def __init__(self, url=None, username=None, password=None, token=None, port=None):
-        # super(AMGServer, self).__init__()
         # todo Get next data from config
         port = ((':%s' % (port or amg_config.conf['api_port'])) if (port or amg_config.conf['api_port']) else '')
         self.__url = 'http://' + (url or amg_config.conf['animagrad_url']) + port + '/' + amg_config.conf['api_url'].replace('\\','/').strip('/') + '/'

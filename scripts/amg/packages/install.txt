@@ -1,5 +1,5 @@
 shotgun_api3
 download:
-
+https://github.com/shotgunsoftware/python-api
 yaml
-download: pip install yaml
+install: pip install pyyaml ot yaml
