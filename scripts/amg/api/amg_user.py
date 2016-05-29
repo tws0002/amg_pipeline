@@ -1,5 +1,5 @@
 import os, json
-user_settings_file_name = 'amg_user_config.json'
+user_settings_file_name = 'amg_config.json'
 import amg_path
 
 
@@ -27,7 +27,7 @@ class User(object):
             json.dump(data, open(self.settings_file, 'w'), indent=2)
         return data
 
-    def dict(self):
+    def as_dict(self):
         s = self.settings()
         s['username'] = self.username
         s['studio_path'] = self.studio_path
@@ -35,7 +35,7 @@ class User(object):
         return s
 
     def json(self):
-        return json.dumps(self.dict(), indent=2)
+        return json.dumps(self.as_dict(), indent=2)
 
 def all_users():
     users_path = amg_path.ftp_path_users()
