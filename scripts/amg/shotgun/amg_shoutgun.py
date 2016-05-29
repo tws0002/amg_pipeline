@@ -1,12 +1,17 @@
 from amg.packages.shotgun_api3.shotgun import Shotgun
 from amg.packages import yaml
-import sgtk
-import re, os
-from amg.api import amg_config
+try:
+    import sgtk
+    from tank.util import shotgun
+except:
+    shotgun = None
+import re, os, json, datetime, time
+import amg_config
 
-AMG_SERVER_PATH = 'https://animagrad.shotgunstudio.com'
-AMG_SCRIPT_USER = 'Toolkit'
-AMG_SCRIPT_KEY  = '2062d7c5d64ad72552fb0e983bd25203a823580620410a56367ac491d325fc6f'
+AMG_SERVER_PATH = amg_config.conf.get('server_path','')
+AMG_SCRIPT_USER = amg_config.conf.get('script_user','')
+AMG_SCRIPT_KEY  = amg_config.conf.get('script_key','')
+project_meta_file = 'amg_project'
 
 global cache
 cache = {}
@@ -16,21 +21,38 @@ class SG(object):
     type = None
     def __init__(self, id, data=None):
         self.id = id
-        self.sg = self.create_connection(AMG_SERVER_PATH, AMG_SCRIPT_USER, AMG_SCRIPT_KEY)
+        self.__sg = None
         self.data = None
         if self.type:
             if not data:
                 self.data = self.sg.find_one(self.type ,[['id','is',id]], self.fields_for(self.type))
             else:
                 self.data = data
-        self.name = 'noname'
+        self.name = None
 
     def __repr__(self):
         return '%s "%s" (%s)' % (self.type, self.name, self.id)
 
+    @property
+    def sg(self):
+        if not self. __sg:
+            self.__sg = self.create_connection(AMG_SERVER_PATH, AMG_SCRIPT_USER, AMG_SCRIPT_KEY)
+        return self. __sg
+
+    @sg.setter
+    def sg(self, v):
+        raise Exception('This variable read only')
+
+    @staticmethod
+    def no_shotgun_message():
+        print 'Shotgun not loaded'
+
     # create connections
     @staticmethod
     def create_connection(SERVER_PATH=None, SCRIPT_USER=None, SCRIPT_KEY=None):
+        if not shotgun:
+            SG.no_shotgun_message()
+            return
         SERVER_PATH = SERVER_PATH or AMG_SERVER_PATH
         SCRIPT_USER = SCRIPT_USER or AMG_SCRIPT_USER
         SCRIPT_KEY  = SCRIPT_KEY or AMG_SCRIPT_KEY
@@ -38,18 +60,82 @@ class SG(object):
 
     # query all
     def get_all_steps(self, filters = None, fields=None):
+        if not shotgun:
+            SG.no_shotgun_message()
+            return
         filters = filters or []
         fields = fields or ['code',"entity_type"]
         return self.sg.find("Step", filters, fields)
 
     @staticmethod
-    def get_all_projects():
-        # filters = filters or []
-        # fields = fields or ['name']
-        # return self.sg.find('Project', filters, fields)
+    def get_all_projects(forse=False):
+        global cache
+        if not forse:
+            if cache.get('list_projects'):
+                return cache.get('list_projects')
+        else:
+            projects = SG.update_meta_projects_from_sever(False)
+            cache['list_projects'] = projects
+            return projects
+        # from meta
+        projects = SG.get_projects_meta()
+        if projects:
+            SG.update_meta_projects_from_sever(True)
+            cache['list_projects'] = projects
+            return projects
+        # from server
+        if not forse:
+            return SG.get_all_projects(True)
+
+    @staticmethod
+    def update_meta_projects_from_sever(in_thread=False):
+        if in_thread:
+            return [] # todo: update project in separated process
         sg = SG.create_connection()
+        if not sg:
+            return
         projects = sg.find('Project',[], sg.schema_field_read('Project').keys())
-        return [SG_Project(id=x['id'], data=x) for x in projects]
+        projects = [SG_Project(id=x['id'], data=x) for x in projects]
+        SG.save_projects_meta(projects)
+        return projects
+
+    @staticmethod
+    def save_projects_meta(projects):
+        for p in projects:
+            prj_path = p.path()
+            if not prj_path or not os.path.exists(prj_path):continue
+            meta_path = os.path.join(prj_path, project_meta_file).replace('\\','/')
+            meta = dict(
+                tank_name=p.data['tank_name'],
+                cached_display_name=p.data['cached_display_name'],
+                created_by=p.data['created_by'],
+                id=p.data['id'],
+                start_date=p.data['start_date'],
+                sg_description=p.data['sg_description'],
+                end_date=p.data['end_date'],
+                archived=p.data['archived'],
+                name=p.data['name'],
+                created_at=time.mktime(p.data['created_at'].timetuple()),
+                sg_start=p.data['sg_start'],
+                is_template=p.data['is_template'],
+                sg_fps=p.data['sg_fps'],
+                tag_list=p.data['tag_list']
+            )
+            json.dump(meta, open(meta_path, 'w'), indent=2)
+
+    @staticmethod
+    def get_projects_meta():
+        projects = []
+        prj_path = amg_config.conf.get('projects_path')
+        if not prj_path:
+            return []
+        for prj in os.listdir(prj_path):
+            meta = os.path.join(prj_path, prj, project_meta_file)
+            if os.path.exists(meta):
+                data = json.load(open(meta))
+                p = SG_Project(data['id'], data)
+                projects.append(p)
+        return projects
 
     @staticmethod
     def current_context():
@@ -62,19 +148,28 @@ class SG(object):
     def get_all_users(cls):
         fields = cls.fields_for('HumanUser')
         filters = []
-        userList = cls.create_connection().find("HumanUser",filters,fields)
+        sg = cls.create_connection()
+        if not sg:
+            return
+        userList = sg.find("HumanUser",filters,fields)
         return userList
     @classmethod
     def get_all_api_users(cls):
         fields = cls.fields_for('ApiUser')
         filters = []
-        userList = cls.create_connection().find("ApiUser",filters,fields)
+        sg = cls.create_connection()
+        if not sg:
+            return
+        userList =  sg.find("ApiUser",filters,fields)
         return userList
     @classmethod
     def get_all_client_users(cls):
         fields = cls.fields_for('ClientUser')
         filters = []
-        userList = cls.create_connection().find("ClientUser",filters,fields)
+        sg = cls.create_connection()
+        if not sg:
+            return
+        userList = sg.find("ClientUser",filters,fields)
         return userList
 
     @classmethod
@@ -92,7 +187,10 @@ class SG(object):
          "RevisionTicketConnection", "RvLicense", "Sequence", "ShootDaySceneConnection", "Shot", "ShotShotConnection", "Status",
          "Step", "Task", "TaskDependency", "TaskTemplate", "TicketTicketConnection", "TimeLog", "Version"
          """
-        return cls.create_connection().schema_field_read(type).keys()
+        sg = cls.create_connection()
+        if not sg:
+            return
+        return sg.schema_field_read(type).keys()
 
     def clear_cache(self):
         for atr in self.__dict__.keys():
@@ -130,6 +228,16 @@ class SG(object):
     #     import amg_config
     #
     #     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(sgtk.__file__)))))
+    @staticmethod
+    def studio_url():
+        if not shotgun:
+            return
+        return shotgun.get_associated_sg_base_url()
+
+    @classmethod
+    def define(cls, path):
+        pass
+# SG.update_meta_projects_from_sever(True)
 
 
 class SG_Project(SG):
@@ -143,7 +251,14 @@ class SG_Project(SG):
         self._sequences = None
         self._shots = None
         self._tank_path = None
-
+        meta_path = os.path.join(self.path(), project_meta_file).replace('\\','/')
+        if not os.path.exists(meta_path):
+            self.meta = None
+        else:
+            self.meta = dict(
+                path=meta_path,
+                data=json.load(open(meta_path))
+            )
 
     def shots(self):
         # filters = [['project','is',{'type':'Project','id':self.id}]]
@@ -177,7 +292,9 @@ class SG_Project(SG):
                     return s
 
     def path(self):
-        path = os.path.join(amg_config.get()['projects_path'], self.data['tank_name']).replace('\\','/')
+        if not self.data['tank_name']:
+            return
+        path = os.path.join(amg_config.conf['projects_path'], self.data['tank_name']).replace('\\','/')
         if os.path.exists(path):
             return path
 
@@ -194,11 +311,38 @@ class SG_Project(SG):
                         return self._tank_path
 
     @classmethod
-    def named(cls, name):
-        projects = SG.get_all_projects()
+    def named(cls, name, force=False, second=False):
+        projects = SG.get_all_projects(force)
         for prj in projects:
             if prj.name == name or prj.data['tank_name'] == name:
                 return prj
+        if not second:
+            return cls.named(name, True, True)
+        else:
+            return
+
+    @classmethod
+    def from_path(cls, path):
+        if not os.path.exists(path):
+            return
+        if os.path.isfile(path):
+            path = os.path.dirname(path)
+        path_elem = path.replace('\\','/').split('/')
+        while path_elem:
+            meta = '/'.join(path_elem+[project_meta_file])
+            if os.path.exists(meta):
+                data = json.load(open(meta))
+                name = data.get('tank_name')
+                if not name:
+                    return
+                else:
+                    prj = SG_Project(data['id'], data)
+                    return prj
+            else:
+                path_elem.pop(-1)
+
+
+
 
     def software_paths(self):
         tank_path = self.tank_path()
@@ -374,3 +518,5 @@ class SG_Afanasy(object):
         super(SG_Afanasy, self).__init__()
 
 
+if __name__ == '__main__':
+    print 'TODO: update projects'

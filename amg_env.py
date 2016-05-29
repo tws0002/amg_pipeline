@@ -1,7 +1,7 @@
 import os, glob, sys
 
 root = os.path.dirname(__file__)
-from amg_config import conf, conf_orig
+from amg_config import conf
 
 
 def amg_env():
@@ -15,7 +15,7 @@ def amg_env():
             os.makedirs(conf['tmp_dir'])
             os.environ['AMG_TEMP'] = conf['tmp_dir']
         except:
-            os.environ['AMG_TEMP'] = conf_orig['tmp_dir']
+            pass
     else:
         os.environ['AMG_TEMP'] = conf['tmp_dir']
     # PATH

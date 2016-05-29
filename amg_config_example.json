@@ -2,21 +2,35 @@
 "":"Create file amg_config.json to overwrite this config",
 
 "":"PATHS",
-    "tmp_dir": "c:/af_temp",
-    "shotgun_exe":"",
-    "rv_exe":"",
-
-    "projects_path":"",
-    "ftp_path":"",
+    "tmp_dir": "path to tmp folder",
+    "shotgun_exe":"path to shotgun exe file",
+    "rv_exe":"path to rv.exe file",
+    "projects_path":"root of local STUDIO projects",
+    "local_path": "root of ocal USER projects",
+    "ftp_path":"path to local ftp folder, not url",
 
 "":"NAMES",
     "menu_title": "AMG_Tools",
 
+"":"USER",
+    "username": "username",
+    "password": "pwd",
+    "token": "sicret_code",
+    "name": "User Name",
+
 "":"STARTUP",
     "load_custom_py": true,
 
-"":"Network",
+"":"NETWORK",
+    "animagrad_url": "animagrad.com",
     "amg_tray_port": 12345,
-    "api_url":"127.0.0.1/api",
-    "api_port":null
+    "api_url": "api/",
+    "api_port": null,
+
+"":"SHOTGUN",
+    "script_user":"sg_username",
+    "script_key":"sg_secretkey",
+
+"":"IMAGES",
+    "thumbnails_size": [300,300]
 }
