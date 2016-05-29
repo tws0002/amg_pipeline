@@ -13,7 +13,8 @@ def studio_projects_path():
     return conf.get('projects_path','').replace('\\','/')
 
 def join(*args):
-    return '/'.join([str(x.replace('\\','/').strip('/')) for x in args])
+    return '/'.join([str(x.replace('\\','/').rstrip('/')) for x in args])
+
 
 def hide(path):
     if os.name == 'nt':
