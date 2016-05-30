@@ -11,7 +11,7 @@ class User(object):
         self.settings_file =  amg_path.join(self.studio_path, user_settings_file_name)
         data = self.settings()
         self.name = data['name']
-        self.local_path = data['local_path']
+        self.local_path = data['user_projects_path']
 
     def __repr__(self):
         return 'AMG User (%s : %s)' % (self.username, self.name)
@@ -21,7 +21,7 @@ class User(object):
             data = json.load(open(self.settings_file))
         else:
             data = dict(
-                local_path='',
+                user_projects_path='',
                 name=self.username
             )
             json.dump(data, open(self.settings_file, 'w'), indent=2)

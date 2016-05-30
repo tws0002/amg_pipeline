@@ -6,7 +6,9 @@
     "shotgun_exe":"path to shotgun exe file",
     "rv_exe":"path to rv.exe file",
     "projects_path":"root of local STUDIO projects",
-    "local_path": "root of ocal USER projects",
+        "":"set remap path is need to remap different path",
+    "remap_projects_path":null,
+    "user_projects_path": "root of ocal USER projects",
     "ftp_path":"path to local ftp folder, not url",
 
 "":"NAMES",
@@ -26,6 +28,7 @@
     "amg_tray_port": 12345,
     "api_url": "api/",
     "api_port": null,
+    "amg_ftp_url":"url of remote ftp",
 
 "":"SHOTGUN",
     "script_user":"sg_username",
